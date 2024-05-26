@@ -1,113 +1,133 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from "react";
+import { fetchImages } from "../utils/api";
+import ImageGrid from "../components/ImageGrid";
+import Pagination from "../components/Pagination";
+import styles from "../styles/Home.module.css";
+import Header from "../components/Header";
 
-export default function Home() {
+const Home = () => {
+  const [images, setImages] = useState([]);
+  const [query, setQuery] = useState("car");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const perPage = 50;
+
+  useEffect(() => {
+    const getImages = async () => {
+      const data = await fetchImages(query, page, perPage);
+      setImages(data.photos);
+      setTotalPages(Math.ceil(data.total_results / perPage));
+    };
+    getImages();
+  }, [query, page]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const input = form.elements.namedItem("search") as HTMLInputElement;
+    setQuery(input.value);
+    setPage(1);
+  };
+
+  const handlePage = (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const input = form.elements.namedItem("page") as HTMLInputElement;
+    setPage(input.value);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <>
+      <div className="container mx-auto">
+        <Header />
+        <div className="flex flex-col md:flex-row mt-20 justify-between items-center md:items-start space-y-4 md:space-y-0">
+          <div className="w-full md:w-auto">
+            <form onSubmit={handleSearch} className={styles.searchForm}>
+              <input
+                type="text"
+                name="search"
+                defaultValue={query}
+                className="w-full md:w-auto"
+              />
+              <button
+                type="submit"
+                className="w-full md:w-auto !bg-black text-white py-2 px-4 mt-2 md:mt-0"
+              >
+                Search
+              </button>
+            </form>
+          </div>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+          <div className="w-full md:w-auto">
+            <form onSubmit={handlePage} className={styles.searchForm}>
+              {/* <h1 className="text-center md:text-left mb-2 md:mb-0">
+              Go to page
+            </h1> */}
+              <input
+                type="number"
+                name="page"
+                defaultValue={page}
+                className="w-full md:w-16"
+              />
+              <button
+                type="submit"
+                className="w-full md:w-auto !bg-black text-white py-2 px-4 mt-2 md:mt-0"
+              >
+                Go
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <ImageGrid images={images} />
+
+        <div className="flex flex-col md:flex-row mt-20 justify-between items-center md:items-start space-y-4 md:space-y-0">
+          <div className="w-full md:w-auto"></div>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+          <div className="w-full md:w-auto">
+            <form onSubmit={handlePage} className={styles.searchForm}>
+              {/* <h1 className="text-center md:text-left mb-2 md:mb-0">
+              Go to page
+            </h1> */}
+              <input
+                type="number"
+                name="page"
+                defaultValue={page}
+                className="w-full md:w-16"
+              />
+              <button
+                type="submit"
+                className="w-full md:w-auto !bg-black text-white py-2 px-4 mt-2 md:mt-0"
+              >
+                Go
+              </button>
+            </form>
+          </div>
         </div>
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+      <div className="w-full bg-[#71e471]">
+        <h1 className="text-center py-4">Images , Vectors and Videos</h1>
       </div>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+      <div className="w-full bg-black">
+        <h1 className="text-center py-1  pt-4 text-2xl text-white">
+          My Image Search
+        </h1>
+        <h1 className="text-center py-1 text-white">
+          Changing the world once image at a time
+        </h1>
       </div>
-    </main>
+    </>
   );
-}
+};
+
+export default Home;
