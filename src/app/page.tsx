@@ -34,7 +34,10 @@ const Home = () => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const input = form.elements.namedItem("page") as HTMLInputElement;
-    setPage(input.value);
+    const pageNumber = Number(input.value);
+    if (!isNaN(pageNumber)) {
+      setPage(pageNumber);
+    }
   };
 
   return (
